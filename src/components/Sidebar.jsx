@@ -1,4 +1,8 @@
-const Sidebar = ({ selectedUser, onSelectUser }) => {
+import useChatStore from "../store/useChatStore";
+
+const Sidebar = () => {
+  const { selectedUser, setSelectedUser } = useChatStore();
+
   const users = [
     { id: 1, name: "Alice", lastMsg: "Hey there!", time: "2m ago", online: true },
     { id: 2, name: "Bob", lastMsg: "See you later", time: "10m ago", online: false },
@@ -16,7 +20,7 @@ const Sidebar = ({ selectedUser, onSelectUser }) => {
         {users.map((user) => (
           <div
             key={user.id}
-            onClick={() => onSelectUser(user)}
+            onClick={() => setSelectedUser(user)}
             style={{
               ...styles.userItem,
               backgroundColor:

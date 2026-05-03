@@ -1,15 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
+import useChatStore from "../store/useChatStore";
 
-const ChatWindow = ({ selectedUser }) => {
-  const [messages, setMessages] = useState([
-    { id: 1, text: "Hey! How are you?", fromMe: false, time: "10:01 AM" },
-    { id: 2, text: "I'm good! What about you?", fromMe: true, time: "10:02 AM" },
-    { id: 3, text: "Doing great, thanks!", fromMe: false, time: "10:03 AM" },
-    { id: 4, text: "Let's catch up soon 😊", fromMe: true, time: "10:05 AM" },
-  ]);
+const ChatWindow = () => {
+  const { selectedUser, conversations, addMessage } = useChatStore();
+  const messages = selectedUser ? (conversations[selectedUser.id] || []) : [];
 
   const [inputText, setInputText] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const messagesEndRef = useRef(null);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   const getTime = () => {
     const now = new Date();
@@ -17,28 +19,27 @@ const ChatWindow = ({ selectedUser }) => {
   };
 
   const handleSend = () => {
-    if (inputText.trim() === "") return;
+    if (inputText.trim() === "" || !selectedUser) return;
 
     const newMessage = {
-      id: messages.length + 1,
+      id: Date.now(),
       text: inputText,
       fromMe: true,
       time: getTime(),
     };
 
-    setMessages([...messages, newMessage]);
+    addMessage(selectedUser.id, newMessage);
     setInputText("");
 
-    // Simulate reply after 1.5 seconds
     setIsTyping(true);
     setTimeout(() => {
       const reply = {
-        id: messages.length + 2,
+        id: Date.now() + 1,
         text: "Got your message! 😊",
         fromMe: false,
         time: getTime(),
       };
-      setMessages((prev) => [...prev, reply]);
+      addMessage(selectedUser.id, reply);
       setIsTyping(false);
     }, 1500);
   };
@@ -47,24 +48,26 @@ const ChatWindow = ({ selectedUser }) => {
     if (e.key === "Enter") handleSend();
   };
 
+  if (!selectedUser) {
+    return (
+      <div style={styles.empty}>
+        <p>👈 Select a user to start chatting</p>
+      </div>
+    );
+  }
+
   return (
     <div style={styles.container}>
-      {/* Header */}
       <div style={styles.header}>
-  <div style={styles.avatar}>
-    {selectedUser ? selectedUser.name[0] : "?"}
-  </div>
-  <div>
-    <p style={styles.name}>
-      {selectedUser ? selectedUser.name : "Select a chat"}
-    </p>
-    <p style={styles.status}>
-      {selectedUser?.online ? "Online" : "Offline"}
-    </p>
-  </div>
-</div>
+        <div style={styles.avatar}>{selectedUser.name[0]}</div>
+        <div>
+          <p style={styles.name}>{selectedUser.name}</p>
+          <p style={styles.status}>
+            {selectedUser.online ? "Online" : "Offline"}
+          </p>
+        </div>
+      </div>
 
-      {/* Messages */}
       <div style={styles.messages}>
         {messages.map((msg) => (
           <div
@@ -86,7 +89,6 @@ const ChatWindow = ({ selectedUser }) => {
           </div>
         ))}
 
-        {/* Typing Indicator */}
         {isTyping && (
           <div style={{ display: "flex", justifyContent: "flex-start" }}>
             <div style={styles.typingBubble}>
@@ -96,9 +98,9 @@ const ChatWindow = ({ selectedUser }) => {
             </div>
           </div>
         )}
+        <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Bar */}
       <div style={styles.inputBar}>
         <input
           type="text"
@@ -108,15 +110,22 @@ const ChatWindow = ({ selectedUser }) => {
           onKeyDown={handleKeyDown}
           style={styles.input}
         />
-        <button onClick={handleSend} style={styles.sendBtn}>
-          Send
-        </button>
+        <button onClick={handleSend} style={styles.sendBtn}>Send</button>
       </div>
     </div>
   );
 };
 
 const styles = {
+  empty: {
+    flex: 1,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    color: "#888",
+    fontSize: "16px",
+    backgroundColor: "#0f1117",
+  },
   container: {
     flex: 1,
     display: "flex",
@@ -191,7 +200,6 @@ const styles = {
     height: "8px",
     borderRadius: "50%",
     backgroundColor: "#888",
-    animation: "bounce 1s infinite",
     display: "inline-block",
   },
   inputBar: {
