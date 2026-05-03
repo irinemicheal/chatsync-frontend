@@ -1,20 +1,30 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import useAuthStore from "../store/useAuthStore";
 
 const SignupPage = () => {
-  const [formData, setFormData] = useState({
-    fullName: "",
-    email: "",
-    password: "",
-  });
+  const [formData, setFormData] = useState({ fullName: "", email: "", password: "" });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { signup } = useAuthStore();
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Signup data:", formData);
+    setLoading(true);
+    setError("");
+    try {
+      await signup(formData);
+      navigate("/login");
+    } catch (err) {
+      setError(err.response?.data?.message || "Signup failed");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -22,6 +32,8 @@ const SignupPage = () => {
       <div style={styles.card}>
         <h1 style={styles.logo}>💬 ChatSync</h1>
         <p style={styles.subtitle}>Create your account</p>
+
+        {error && <p style={styles.error}>{error}</p>}
 
         <form onSubmit={handleSubmit} style={styles.form}>
           <input
@@ -51,8 +63,8 @@ const SignupPage = () => {
             style={styles.input}
             required
           />
-          <button type="submit" style={styles.button}>
-            Create Account
+          <button type="submit" style={styles.button} disabled={loading}>
+            {loading ? "Creating account..." : "Create Account"}
           </button>
         </form>
 
@@ -92,6 +104,15 @@ const styles = {
     color: "#888",
     marginBottom: "28px",
     fontSize: "14px",
+  },
+  error: {
+    backgroundColor: "#ff4d4d22",
+    color: "#ff4d4d",
+    padding: "10px",
+    borderRadius: "8px",
+    marginBottom: "16px",
+    fontSize: "13px",
+    textAlign: "center",
   },
   form: {
     display: "flex",

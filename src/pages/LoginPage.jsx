@@ -1,16 +1,30 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import useAuthStore from "../store/useAuthStore";
 
 const LoginPage = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { login } = useAuthStore();
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Login data:", formData);
+    setLoading(true);
+    setError("");
+    try {
+      await login(formData);
+      navigate("/");
+    } catch (err) {
+      setError(err.response?.data?.message || "Login failed");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -18,6 +32,8 @@ const LoginPage = () => {
       <div style={styles.card}>
         <h1 style={styles.logo}>💬 ChatSync</h1>
         <p style={styles.subtitle}>Welcome back</p>
+
+        {error && <p style={styles.error}>{error}</p>}
 
         <form onSubmit={handleSubmit} style={styles.form}>
           <input
@@ -38,8 +54,8 @@ const LoginPage = () => {
             style={styles.input}
             required
           />
-          <button type="submit" style={styles.button}>
-            Login
+          <button type="submit" style={styles.button} disabled={loading}>
+            {loading ? "Logging in..." : "Login"}
           </button>
         </form>
 
@@ -79,6 +95,15 @@ const styles = {
     color: "#888",
     marginBottom: "28px",
     fontSize: "14px",
+  },
+  error: {
+    backgroundColor: "#ff4d4d22",
+    color: "#ff4d4d",
+    padding: "10px",
+    borderRadius: "8px",
+    marginBottom: "16px",
+    fontSize: "13px",
+    textAlign: "center",
   },
   form: {
     display: "flex",
