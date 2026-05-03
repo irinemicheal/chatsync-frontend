@@ -1,51 +1,68 @@
 import { useState, useEffect, useRef } from "react";
 import useChatStore from "../store/useChatStore";
+import useAuthStore from "../store/useAuthStore";
+import useSocketStore from "../store/useSocketStore";
 
 const ChatWindow = () => {
-  const { selectedUser, conversations, addMessage } = useChatStore();
-  const messages = selectedUser ? (conversations[selectedUser.id] || []) : [];
-
+  const { selectedUser, messages, fetchMessages, sendMessage } = useChatStore();
+  const { user } = useAuthStore();
+  const { socket, onlineUsers } = useSocketStore();
   const [inputText, setInputText] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
+    if (selectedUser) fetchMessages(selectedUser.id);
+  }, [selectedUser]);
+
+  useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const getTime = () => {
-    const now = new Date();
-    return now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  useEffect(() => {
+    if (!socket) return;
+    socket.on("userTyping", () => setIsTyping(true));
+    socket.on("userStopTyping", () => setIsTyping(false));
+    return () => {
+      socket.off("userTyping");
+      socket.off("userStopTyping");
+    };
+  }, [socket]);
+
+  const getTime = (date) => {
+    const d = date ? new Date(date) : new Date();
+    return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (inputText.trim() === "" || !selectedUser) return;
-
-    const newMessage = {
-      id: Date.now(),
-      text: inputText,
-      fromMe: true,
-      time: getTime(),
-    };
-
-    addMessage(selectedUser.id, newMessage);
+    await sendMessage(selectedUser.id, inputText);
+    if (socket) {
+      socket.emit("sendMessage", {
+        receiverId: selectedUser.id,
+        message: {
+          senderId: user.id,
+          receiverId: selectedUser.id,
+          text: inputText,
+          createdAt: new Date(),
+        },
+      });
+    }
     setInputText("");
-
-    setIsTyping(true);
-    setTimeout(() => {
-      const reply = {
-        id: Date.now() + 1,
-        text: "Got your message! 😊",
-        fromMe: false,
-        time: getTime(),
-      };
-      addMessage(selectedUser.id, reply);
-      setIsTyping(false);
-    }, 1500);
   };
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter") handleSend();
+  };
+
+  const handleTyping = (e) => {
+    setInputText(e.target.value);
+    if (socket && selectedUser) {
+      socket.emit("typing", { receiverId: selectedUser.id, senderId: user.id });
+      setTimeout(() => {
+        socket.emit("stopTyping", { receiverId: selectedUser.id });
+      }, 1000);
+    }
   };
 
   if (!selectedUser) {
@@ -56,14 +73,16 @@ const ChatWindow = () => {
     );
   }
 
+  const isOnline = onlineUsers.includes(selectedUser.id);
+
   return (
     <div style={styles.container}>
       <div style={styles.header}>
         <div style={styles.avatar}>{selectedUser.name[0]}</div>
         <div>
           <p style={styles.name}>{selectedUser.name}</p>
-          <p style={styles.status}>
-            {selectedUser.online ? "Online" : "Offline"}
+          <p style={{ ...styles.status, color: isOnline ? "#22c55e" : "#888" }}>
+            {isOnline ? "Online" : "Offline"}
           </p>
         </div>
       </div>
@@ -71,20 +90,20 @@ const ChatWindow = () => {
       <div style={styles.messages}>
         {messages.map((msg) => (
           <div
-            key={msg.id}
+            key={msg._id}
             style={{
               ...styles.messageRow,
-              justifyContent: msg.fromMe ? "flex-end" : "flex-start",
+              justifyContent: msg.senderId === user.id ? "flex-end" : "flex-start",
             }}
           >
             <div
               style={{
                 ...styles.bubble,
-                backgroundColor: msg.fromMe ? "#7c6af7" : "#2e3044",
+                backgroundColor: msg.senderId === user.id ? "#7c6af7" : "#2e3044",
               }}
             >
               <p style={styles.text}>{msg.text}</p>
-              <p style={styles.time}>{msg.time}</p>
+              <p style={styles.time}>{getTime(msg.createdAt)}</p>
             </div>
           </div>
         ))}
@@ -106,7 +125,7 @@ const ChatWindow = () => {
           type="text"
           placeholder="Type a message..."
           value={inputText}
-          onChange={(e) => setInputText(e.target.value)}
+          onChange={handleTyping}
           onKeyDown={handleKeyDown}
           style={styles.input}
         />
@@ -159,7 +178,6 @@ const styles = {
   },
   status: {
     fontSize: "12px",
-    color: "#22c55e",
   },
   messages: {
     flex: 1,

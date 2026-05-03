@@ -1,42 +1,62 @@
+import { useEffect } from "react";
+import axios from "axios";
 import useChatStore from "../store/useChatStore";
+import useSocketStore from "../store/useSocketStore";
+import useAuthStore from "../store/useAuthStore";
+import { create } from "zustand";
+
+const useUserStore = create((set) => ({
+  users: [],
+  fetchUsers: async () => {
+    const token = localStorage.getItem("token");
+    const res = await axios.get("http://localhost:5000/api/users", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    set({ users: res.data });
+  },
+}));
 
 const Sidebar = () => {
   const { selectedUser, setSelectedUser } = useChatStore();
+  const { onlineUsers } = useSocketStore();
+  const { user, logout } = useAuthStore();
+  const { users, fetchUsers } = useUserStore();
 
-  const users = [
-    { id: 1, name: "Alice", lastMsg: "Hey there!", time: "2m ago", online: true },
-    { id: 2, name: "Bob", lastMsg: "See you later", time: "10m ago", online: false },
-    { id: 3, name: "Carol", lastMsg: "Sounds good!", time: "1h ago", online: true },
-    { id: 4, name: "David", lastMsg: "Ok cool", time: "3h ago", online: false },
-  ];
+  useEffect(() => {
+    fetchUsers();
+  }, []);
 
   return (
     <div style={styles.sidebar}>
       <div style={styles.header}>
         <h2 style={styles.title}>💬 ChatSync</h2>
+        <button onClick={logout} style={styles.logoutBtn}>Logout</button>
       </div>
 
       <div style={styles.userList}>
-        {users.map((user) => (
+        {users.length === 0 && (
+          <p style={styles.noUsers}>No other users yet. Ask a friend to sign up!</p>
+        )}
+        {users.map((u) => (
           <div
-            key={user.id}
-            onClick={() => setSelectedUser(user)}
+            key={u._id}
+            onClick={() => setSelectedUser({ id: u._id, name: u.fullName, online: onlineUsers.includes(u._id) })}
             style={{
               ...styles.userItem,
-              backgroundColor:
-                selectedUser?.id === user.id ? "#2e3044" : "transparent",
+              backgroundColor: selectedUser?.id === u._id ? "#2e3044" : "transparent",
             }}
           >
             <div style={styles.avatarWrapper}>
-              <div style={styles.avatar}>{user.name[0]}</div>
-              {user.online && <span style={styles.onlineDot} />}
+              <div style={styles.avatar}>{u.fullName[0]}</div>
+              {onlineUsers.includes(u._id) && <span style={styles.onlineDot} />}
             </div>
             <div style={styles.userInfo}>
               <div style={styles.nameRow}>
-                <span style={styles.name}>{user.name}</span>
-                <span style={styles.time}>{user.time}</span>
+                <span style={styles.name}>{u.fullName}</span>
               </div>
-              <p style={styles.lastMsg}>{user.lastMsg}</p>
+              <p style={styles.lastMsg}>
+                {onlineUsers.includes(u._id) ? "Online" : "Offline"}
+              </p>
             </div>
           </div>
         ))}
@@ -57,10 +77,28 @@ const styles = {
   header: {
     padding: "20px",
     borderBottom: "1px solid #2e3044",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   title: {
     color: "#7c6af7",
     fontSize: "20px",
+  },
+  logoutBtn: {
+    padding: "6px 12px",
+    borderRadius: "6px",
+    border: "none",
+    backgroundColor: "#ff4d4d22",
+    color: "#ff4d4d",
+    cursor: "pointer",
+    fontSize: "12px",
+  },
+  noUsers: {
+    color: "#888",
+    fontSize: "13px",
+    textAlign: "center",
+    padding: "20px",
   },
   userList: {
     overflowY: "auto",
@@ -112,16 +150,9 @@ const styles = {
     fontSize: "14px",
     color: "white",
   },
-  time: {
-    fontSize: "11px",
-    color: "#888",
-  },
   lastMsg: {
     fontSize: "12px",
     color: "#888",
-    whiteSpace: "nowrap",
-    overflow: "hidden",
-    textOverflow: "ellipsis",
   },
 };
 

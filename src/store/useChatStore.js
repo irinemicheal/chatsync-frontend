@@ -1,32 +1,41 @@
 import { create } from "zustand";
+import axios from "axios";
 
-const useChatStore = create((set) => ({
+const useChatStore = create((set, get) => ({
   selectedUser: null,
   setSelectedUser: (user) => set({ selectedUser: user }),
+  messages: [],
 
-  conversations: {
-    1: [
-      { id: 1, text: "Hey! How are you?", fromMe: false, time: "10:01 AM" },
-      { id: 2, text: "I'm good! What about you?", fromMe: true, time: "10:02 AM" },
-    ],
-    2: [
-      { id: 1, text: "See you later!", fromMe: false, time: "9:00 AM" },
-    ],
-    3: [
-      { id: 1, text: "Sounds good!", fromMe: false, time: "8:00 AM" },
-    ],
-    4: [
-      { id: 1, text: "Ok cool", fromMe: false, time: "7:00 AM" },
-    ],
+  fetchMessages: async (userId) => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get(`http://localhost:5000/api/messages/${userId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      set({ messages: res.data });
+    } catch (error) {
+      console.log("Error fetching messages:", error);
+    }
   },
 
-  addMessage: (userId, message) =>
-    set((state) => ({
-      conversations: {
-        ...state.conversations,
-        [userId]: [...(state.conversations[userId] || []), message],
-      },
-    })),
+  sendMessage: async (receiverId, text) => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.post(
+        "http://localhost:5000/api/messages/send",
+        { receiverId, text },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      set({ messages: [...get().messages, res.data] });
+      return res.data;
+    } catch (error) {
+      console.log("Error sending message:", error);
+    }
+  },
+
+  addMessage: (message) => {
+    set({ messages: [...get().messages, message] });
+  },
 }));
 
 export default useChatStore;
