@@ -13,8 +13,20 @@ const SignupPage = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const validate = () => {
+    if (formData.fullName.trim().length < 2) return "Full name must be at least 2 characters";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) return "Enter a valid email address";
+    if (formData.password.length < 8) return "Password must be at least 8 characters";
+    if (!/[A-Z]/.test(formData.password)) return "Password must contain at least one uppercase letter";
+    if (!/[0-9]/.test(formData.password)) return "Password must contain at least one number";
+    if (!/[!@#$%^&*]/.test(formData.password)) return "Password must contain at least one special character (!@#$%^&*)";
+    return null;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const validationError = validate();
+    if (validationError) return setError(validationError);
     setLoading(true);
     setError("");
     try {
@@ -63,6 +75,31 @@ const SignupPage = () => {
             style={styles.input}
             required
           />
+
+          {/* Password strength indicator */}
+          {formData.password && (
+            <div style={{ fontSize: "12px", marginTop: "-8px" }}>
+              {formData.password.length < 8 && (
+                <p style={styles.invalid}>✗ At least 8 characters</p>
+              )}
+              {!/[A-Z]/.test(formData.password) && (
+                <p style={styles.invalid}>✗ At least one uppercase letter</p>
+              )}
+              {!/[0-9]/.test(formData.password) && (
+                <p style={styles.invalid}>✗ At least one number</p>
+              )}
+              {!/[!@#$%^&*]/.test(formData.password) && (
+                <p style={styles.invalid}>✗ At least one special character (!@#$%^&*)</p>
+              )}
+              {formData.password.length >= 8 &&
+                /[A-Z]/.test(formData.password) &&
+                /[0-9]/.test(formData.password) &&
+                /[!@#$%^&*]/.test(formData.password) && (
+                  <p style={styles.valid}>✓ Strong password!</p>
+                )}
+            </div>
+          )}
+
           <button type="submit" style={styles.button} disabled={loading}>
             {loading ? "Creating account..." : "Create Account"}
           </button>
@@ -127,6 +164,14 @@ const styles = {
     color: "white",
     fontSize: "14px",
     outline: "none",
+  },
+  invalid: {
+    color: "#ff4d4d",
+    margin: "2px 0",
+  },
+  valid: {
+    color: "#22c55e",
+    margin: "2px 0",
   },
   button: {
     padding: "12px",
