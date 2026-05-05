@@ -6,27 +6,15 @@ const useChatStore = create((set, get) => ({
   messages: [],
   sharedMedia: [],
   unreadCounts: {},
-setSelectedUser: (user) => {
-  set((state) => ({
-    selectedUser: user,
-    unreadCounts: {
-      ...state.unreadCounts,
-      [user.id.toString()]: 0,
-    },
-  }));
-},
 
-  incrementUnread: (senderId) => {
-    const { selectedUser } = get();
-    // Only increment if this sender is NOT the currently open chat
-    if (!selectedUser || selectedUser.id !== senderId) {
-      set((state) => ({
-        unreadCounts: {
-          ...state.unreadCounts,
-          [senderId]: (state.unreadCounts[senderId] || 0) + 1,
-        },
-      }));
-    }
+  setSelectedUser: (user) => {
+    set((state) => ({
+      selectedUser: user,
+      unreadCounts: {
+        ...state.unreadCounts,
+        [user.id]: 0,
+      },
+    }));
   },
 
   fetchMessages: async (userId) => {
@@ -69,30 +57,28 @@ setSelectedUser: (user) => {
   },
 
   addMessage: (message) => {
-  const { selectedUser } = get();
+    const { selectedUser } = get();
+    const senderId = message.senderId?._id
+      ? message.senderId._id.toString()
+      : message.senderId?.toString();
 
-  // Normalize senderId to string
-  const senderId = typeof message.senderId === "object"
-    ? message.senderId?._id?.toString() || message.senderId?.toString()
-    : message.senderId?.toString();
+    console.log("addMessage - senderId:", senderId);
+    console.log("addMessage - selectedUser.id:", selectedUser?.id);
 
-  console.log("addMessage called - senderId:", senderId);
-  console.log("selectedUser:", selectedUser?.id);
-
-  // Add to messages if this chat is open
-  if (selectedUser && selectedUser.id === senderId) {
-    set({ messages: [...get().messages, message] });
-  } else {
-    // Increment unread for sender
-    console.log("Incrementing unread for:", senderId);
-    set((state) => ({
-      unreadCounts: {
-        ...state.unreadCounts,
-        [senderId]: (state.unreadCounts[senderId] || 0) + 1,
-      },
-    }));
-  }
-},
+    if (selectedUser && selectedUser.id === senderId) {
+      // Chat is open — add message directly
+      set({ messages: [...get().messages, message] });
+    } else {
+      // Chat not open — increment unread
+      console.log("Incrementing unread for:", senderId);
+      set((state) => ({
+        unreadCounts: {
+          ...state.unreadCounts,
+          [senderId]: (state.unreadCounts[senderId] || 0) + 1,
+        },
+      }));
+    }
+  },
 
   updateSelectedUserPic: (profilePic) =>
     set((state) => ({
