@@ -76,7 +76,16 @@ npm run dev
 
 ## 📸 Screenshots
 
-> Login Page, Chat UI, Profile Modal
+1. Login Page
+<img width="1920" height="906" alt="Screenshot (140)" src="https://github.com/user-attachments/assets/242df186-43c6-43dc-b432-bb84aae1ff04" />
+
+2.  Chat UI
+<img width="1920" height="918" alt="Screenshot (141)" src="https://github.com/user-attachments/assets/342fe5eb-ca11-4afb-9a0d-08a1cc15d955" />
+ 
+3.  Profile Modal
+
+<img width="1902" height="908" alt="Screenshot (142)" src="https://github.com/user-attachments/assets/36082fe5-1125-44d7-acc1-c6c5f18df52b" />
+
 
 ---
 
