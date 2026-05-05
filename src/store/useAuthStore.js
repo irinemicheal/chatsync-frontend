@@ -15,7 +15,7 @@ const useAuthStore = create((set) => ({
   token: localStorage.getItem("token") || null,
 
   signup: async (formData) => {
-    const res = await axios.post("http://localhost:5000/api/auth/signup", formData);
+    const res = await axios.post("https://chatsync-backend-jkpd.onrender.com/api/auth/signup", formData);
     const user = {
       id: res.data.user.id,
       fullName: res.data.user.fullName,
@@ -30,7 +30,7 @@ const useAuthStore = create((set) => ({
   },
 
   login: async (formData) => {
-    const res = await axios.post("http://localhost:5000/api/auth/login", formData);
+    const res = await axios.post("https://chatsync-backend-jkpd.onrender.com/api/auth/login", formData);
     const user = {
       id: res.data.user.id,
       fullName: res.data.user.fullName,
@@ -46,7 +46,7 @@ const useAuthStore = create((set) => ({
 
   updateProfile: async (formData) => {
     const token = localStorage.getItem("token");
-    const res = await axios.put("http://localhost:5000/api/auth/update", formData, {
+    const res = await axios.put("https://chatsync-backend-jkpd.onrender.com/api/auth/update", formData, {
       headers: { Authorization: `Bearer ${token}` },
     });
     const updatedUser = {
@@ -63,7 +63,7 @@ const useAuthStore = create((set) => ({
 
   deleteAccount: async () => {
     const token = localStorage.getItem("token");
-    await axios.delete("http://localhost:5000/api/auth/delete", {
+    await axios.delete("https://chatsync-backend-jkpd.onrender.com/api/auth/delete", {
       headers: { Authorization: `Bearer ${token}` },
     });
     set({ user: null, token: null });

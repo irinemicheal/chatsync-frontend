@@ -20,7 +20,7 @@ const useChatStore = create((set, get) => ({
   fetchMessages: async (userId) => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get(`http://localhost:5000/api/messages/${userId}`, {
+      const res = await axios.get(`https://chatsync-backend-jkpd.onrender.com/api/messages/${userId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       set({ messages: res.data });
@@ -32,7 +32,7 @@ const useChatStore = create((set, get) => ({
   fetchSharedMedia: async (userId) => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get(`http://localhost:5000/api/messages/media/${userId}`, {
+      const res = await axios.get(`https://chatsync-backend-jkpd.onrender.com/api/messages/media/${userId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       set({ sharedMedia: res.data });
@@ -45,7 +45,7 @@ const useChatStore = create((set, get) => ({
     try {
       const token = localStorage.getItem("token");
       const res = await axios.post(
-        "http://localhost:5000/api/messages/send",
+        "https://chatsync-backend-jkpd.onrender.com/api/messages/send",
         { receiverId, text, fileUrl, fileName, fileType },
         { headers: { Authorization: `Bearer ${token}` } }
       );

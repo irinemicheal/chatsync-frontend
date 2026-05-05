@@ -15,7 +15,7 @@ const useSocketStore = create((set, get) => ({
     }
 
     console.log("Connecting socket for userId:", userId);
-    socketInstance = io("http://localhost:5000");
+    socketInstance = io("https://chatsync-backend-jkpd.onrender.com");
 
     socketInstance.on("connect", () => {
       console.log("Socket connected! ID:", socketInstance.id);
