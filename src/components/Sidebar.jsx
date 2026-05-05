@@ -26,9 +26,12 @@ const Sidebar = () => {
   const [showProfile, setShowProfile] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
 
-  useEffect(() => {
-    fetchUsers();
-  }, []);
+ useEffect(() => {
+  fetchUsers();
+  // Retry after 3 seconds in case backend was sleeping
+  const timer = setTimeout(() => fetchUsers(), 3000);
+  return () => clearTimeout(timer);
+}, []);
 
   return (
     <div style={styles.sidebar}>
