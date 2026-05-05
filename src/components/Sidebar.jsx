@@ -11,7 +11,7 @@ const useUserStore = create((set) => ({
   users: [],
   fetchUsers: async () => {
     const token = localStorage.getItem("token");
-    const res = await axios.get("http://localhost:5000/api/users", {
+const res = await axios.get("https://chatsync-backend-jkpd.onrender.com/api/users", {
       headers: { Authorization: `Bearer ${token}` },
     });
     set({ users: res.data });
