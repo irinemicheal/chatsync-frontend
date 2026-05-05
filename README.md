@@ -1,16 +1,86 @@
-# React + Vite
+# 💬 ChatSync - Real-Time Messaging Application
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A full-stack real-time chat application built with React, Node.js, Socket.IO and MongoDB.
 
-Currently, two official plugins are available:
+🌐 **Live Demo:** https://chatsync-frontend.vercel.app
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+---
 
-## React Compiler
+## ✨ Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- 🔐 JWT Authentication with secure login/signup
+- 💬 Real-time messaging with Socket.IO
+- 👤 User profiles with profile pictures
+- 📁 File and image sharing
+- 🟢 Online/Offline status indicators
+- ⌨️ Typing indicators
+- 🔔 Unread message notifications
+- 🌙 Dark mode UI
+- 📱 Responsive design
+- 🗑️ Edit and delete account
+- 🖼️ Shared media gallery
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## 🛠️ Tech Stack
+
+### Frontend
+- React.js + Vite
+- Zustand (State Management)
+- Socket.IO Client
+- Axios
+- React Router DOM
+
+### Backend
+- Node.js + Express.js
+- MongoDB + Mongoose
+- Socket.IO
+- JWT Authentication
+- bcryptjs
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js v18+
+- MongoDB
+
+### Frontend Setup
+```bash
+git clone https://github.com/irinemicheal/chatsync-frontend
+cd chatsync-frontend
+npm install
+npm run dev
+```
+
+### Backend Setup
+```bash
+git clone https://github.com/irinemicheal/chatsync-backend
+cd chatsync-backend
+npm install
+```
+
+Create `.env` file:
+```
+PORT=5000
+MONGO_URI=your_mongodb_uri
+JWT_SECRET=your_jwt_secret
+```
+
+```bash
+npm run dev
+```
+
+---
+
+## 📸 Screenshots
+
+> Login Page, Chat UI, Profile Modal
+
+---
+
+## 👩‍💻 Author
+
+**Irine Micheal**
+- GitHub: [@irinemicheal](https://github.com/irinemicheal)
